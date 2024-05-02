@@ -1,0 +1,183 @@
+Subject: [PATCH] Uncommitted changes before Update at 19-Apr-24 6:44 PM [Changes]
+---
+Index: src/main/java/com/excelr/groupfive/backend/models/LeaveType.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/excelr/groupfive/backend/models/LeaveType.java b/src/main/java/com/excelr/groupfive/backend/models/LeaveType.java
+--- a/src/main/java/com/excelr/groupfive/backend/models/LeaveType.java	
++++ b/src/main/java/com/excelr/groupfive/backend/models/LeaveType.java	
+@@ -19,5 +19,6 @@
+     private UUID leaveTypeId;
+     private String leaveTypeName;
+     private int defaultAllowance;
++    private boolean docsRequired;
+ 
+ }
+Index: src/main/java/com/excelr/groupfive/backend/service/EmployeeService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/excelr/groupfive/backend/service/EmployeeService.java b/src/main/java/com/excelr/groupfive/backend/service/EmployeeService.java
+--- a/src/main/java/com/excelr/groupfive/backend/service/EmployeeService.java	
++++ b/src/main/java/com/excelr/groupfive/backend/service/EmployeeService.java	
+@@ -10,9 +10,9 @@
+ 
+ public interface EmployeeService extends UserDetailsService {
+     List<Employee> getAllEmployees();
+-    Employee getEmployeeById(String id);
+-    Employee updateEmployee(String id, Employee employee);
+-    void deleteEmployee(String id);
++    Employee getEmployeeById(UUID id);
++    Employee updateEmployee(UUID id, Employee employee);
++    void deleteEmployee(UUID id);
+ 
+     List<Employee> findByDepartmentId(UUID deptId);
+ 
+Index: src/main/java/com/excelr/groupfive/backend/serviceimpl/EmployeeServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/excelr/groupfive/backend/serviceimpl/EmployeeServiceImpl.java b/src/main/java/com/excelr/groupfive/backend/serviceimpl/EmployeeServiceImpl.java
+--- a/src/main/java/com/excelr/groupfive/backend/serviceimpl/EmployeeServiceImpl.java	
++++ b/src/main/java/com/excelr/groupfive/backend/serviceimpl/EmployeeServiceImpl.java	
+@@ -26,13 +26,13 @@
+     }
+ 
+     @Override
+-    public Employee getEmployeeById(String id) {
++    public Employee getEmployeeById(UUID id) {
+         Optional<Employee> employeeOptional = employeeRepository.findById(id);
+         return employeeOptional.orElse(null);
+     }
+ 
+     @Override
+-    public Employee updateEmployee(String id, Employee employee) {
++    public Employee updateEmployee(UUID id, Employee employee) {
+         Optional<Employee> existingEmployeeOptional = employeeRepository.findById(id);
+         if (existingEmployeeOptional.isPresent()) {
+             Employee existingEmployee = existingEmployeeOptional.get();
+@@ -61,7 +61,7 @@
+     }
+ 
+     @Override
+-    public void deleteEmployee(String id) {
++    public void deleteEmployee(UUID id) {
+         employeeRepository.deleteById(id);
+     }
+ 
+Index: src/main/java/com/excelr/groupfive/backend/repository/EmployeeRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/excelr/groupfive/backend/repository/EmployeeRepository.java b/src/main/java/com/excelr/groupfive/backend/repository/EmployeeRepository.java
+--- a/src/main/java/com/excelr/groupfive/backend/repository/EmployeeRepository.java	
++++ b/src/main/java/com/excelr/groupfive/backend/repository/EmployeeRepository.java	
+@@ -7,7 +7,7 @@
+ import java.util.UUID;
+ 
+ @Repository
+-public interface EmployeeRepository extends JpaRepository<Employee, String> {
++public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
+     Employee findByUsername(String username);
+     Employee findByEmail(String email);
+ 
+Index: src/main/java/com/excelr/groupfive/backend/controller/EmployeeController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/excelr/groupfive/backend/controller/EmployeeController.java b/src/main/java/com/excelr/groupfive/backend/controller/EmployeeController.java
+--- a/src/main/java/com/excelr/groupfive/backend/controller/EmployeeController.java	
++++ b/src/main/java/com/excelr/groupfive/backend/controller/EmployeeController.java	
+@@ -13,7 +13,7 @@
+ import java.util.UUID;
+ 
+ @RestController
+-@CrossOrigin(origins = "http://localhost:5173", allowedHeaders = {"authorization"})
++@CrossOrigin(origins = "http://localhost:5173", allowedHeaders = {"authorization", "content-type"})
+ @RequestMapping("/employees")
+ public class EmployeeController {
+ 
+@@ -34,7 +34,7 @@
+ 
+ 
+     @GetMapping("/{id}")
+-    public ResponseEntity<Employee> getEmployeeById(@PathVariable String id) {
++    public ResponseEntity<Employee> getEmployeeById(@PathVariable UUID id) {
+         Employee employee = employeeService.getEmployeeById(id);
+         if (employee != null) {
+             return ResponseEntity.ok(employee);
+@@ -44,7 +44,7 @@
+     }
+ 
+     @PutMapping("/{id}")
+-    public ResponseEntity<Employee> updateEmployee(@PathVariable String id, @RequestBody Employee employee) {
++    public ResponseEntity<Employee> updateEmployee(@PathVariable UUID id, @RequestBody Employee employee) {
+         Employee updatedEmployee = employeeService.updateEmployee(id, employee);
+         if (updatedEmployee != null) {
+             return ResponseEntity.ok(updatedEmployee);
+@@ -54,7 +54,7 @@
+     }
+ 
+     @DeleteMapping("/{id}")
+-    public ResponseEntity<Void> deleteEmployee(@PathVariable String id) {
++    public ResponseEntity<Void> deleteEmployee(@PathVariable UUID id) {
+         employeeService.deleteEmployee(id);
+         return ResponseEntity.ok().build();
+     }
+Index: src/main/java/com/excelr/groupfive/backend/controller/LeaveRequestController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/excelr/groupfive/backend/controller/LeaveRequestController.java b/src/main/java/com/excelr/groupfive/backend/controller/LeaveRequestController.java
+--- a/src/main/java/com/excelr/groupfive/backend/controller/LeaveRequestController.java	
++++ b/src/main/java/com/excelr/groupfive/backend/controller/LeaveRequestController.java	
+@@ -28,9 +28,15 @@
+ 
+     @PostMapping("/create-leave")
+     public ResponseEntity<Object> createLeaveRequest(@RequestBody LeaveRequest leaveRequest){
+-        if (leaveRequestService.existsByEmployeeIdAndStartDateAndEndDateAndStatus(leaveRequest.getEmployeeId(),leaveRequest.getStartDate(), leaveRequest.getEndDate(),leaveRequest.getStatus())){
+-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections.singletonMap("errMsg","Similar Leave Request already exists!"));
++        UUID employeeId = leaveRequest.getEmployeeId();
++        Date startDate = leaveRequest.getStartDate();
++        Date endDate = leaveRequest.getEndDate();
++
++        if (leaveRequestService.existsOverlappingLeave(employeeId, startDate, endDate)) {
++            return ResponseEntity.status(HttpStatus.CONFLICT)
++                    .body(Collections.singletonMap("errMsg", "Leave request overlaps with existing leaves!"));
+         }
++
+         LeaveRequest newLeaveRequest = leaveRequestService.createLeaveRequest(leaveRequest);
+         return ResponseEntity.ok(newLeaveRequest);
+     }
+Index: src/main/java/com/excelr/groupfive/backend/models/LeaveRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/excelr/groupfive/backend/models/LeaveRequest.java b/src/main/java/com/excelr/groupfive/backend/models/LeaveRequest.java
+--- a/src/main/java/com/excelr/groupfive/backend/models/LeaveRequest.java	
++++ b/src/main/java/com/excelr/groupfive/backend/models/LeaveRequest.java	
+@@ -3,6 +3,7 @@
+ import jakarta.persistence.*;
+ 
+ import java.util.Date;
++import java.util.List;
+ import java.util.UUID;
+ 
+ import lombok.*;
+@@ -26,6 +27,8 @@
+     private String status;
+     private String managerFeedback;
+     private String reason;
++    @ElementCollection
++    private List<String> images;
+     private Date createdAt;
+     private Date updatedAt;
+ 
